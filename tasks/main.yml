@@ -1,0 +1,33 @@
+---
+
+- name: amend_hosts_file
+  template:
+    src:    hosts.j2
+    dest:   /etc/hosts
+    owner:  root
+    group:  root
+    mode:   "u=rw,g=r,o=r"
+
+- name: amend_hostname_file
+  template:
+    src:    hostname.j2
+    dest:   /etc/hostname
+    owner:  root
+    group:  root
+    mode:   "u=rw,g=r,o=r"
+
+- name: amend_runtime_hostname
+  hostname: name={{ short_hostname }}
+
+- name: upgrade_system
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: amend_banner
+  template:
+    src:    banner.j2
+    dest:   /etc/issue.net
+    owner:  root
+    group:  root
+    mode:   "u=rw,g=r,o=r"
