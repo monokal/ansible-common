@@ -17,17 +17,27 @@
     mode:   "u=rw,g=r,o=r"
 
 - name: amend_runtime_hostname
-  hostname: name={{ short_hostname }}
+  hostname:
+    name: "{{ short_hostname }}"
 
 - name: upgrade_system
   apt:
     update_cache: yes
     upgrade: dist
 
-- name: amend_banner
+- name: remove_motd
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/etc/update-motd.d/00-header"
+    - "/etc/update-motd.d/10-help-text"
+    - "/etc/update-motd.d/50-landscape-sysinfo"
+
+- name: amend_motd
   template:
-    src:    banner.j2
-    dest:   /etc/issue.net
+    src:    00-monokal-header.j2
+    dest:   /etc/update-motd.d/00-monokal-header
     owner:  root
     group:  root
-    mode:   "u=rw,g=r,o=r"
+    mode:   "u=rwx,g=rx,o=rx"
