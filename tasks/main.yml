@@ -1,5 +1,7 @@
 ---
 
+# Hostname
+
 - name: amend_hosts_file
   template:
     src:    hosts.j2
@@ -20,10 +22,7 @@
   hostname:
     name: "{{ short_hostname }}"
 
-- name: upgrade_system
-  apt:
-    update_cache: yes
-    upgrade: dist
+# MOTD
 
 - name: remove_motd
   file:
@@ -41,3 +40,65 @@
     owner:  root
     group:  root
     mode:   "u=rwx,g=rx,o=rx"
+
+# Upgrade
+
+- name: upgrade_system
+  apt:
+    update_cache: yes
+    upgrade: dist
+  register: upgrade_system
+
+# Packages
+
+- name: install_packages
+  when: upgrade_system|success
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - "ntp"
+    - "htop"
+    - "wget"
+    - "git"
+  register: install_packages
+
+# Configure Vim
+
+- name: create_vim_dirs
+  file:
+    path:   "{{ item }}"
+    state:  directory
+  with_items:
+    - "/root/.vim"
+    - "/root/.vim/colors"
+  register: create_vim_dirs
+
+- name: configure_vim_theme
+  when: install_packages|success and create_vim_dirs|success
+  copy:
+    src:    molokai.vim
+    dest:   /root/.vim/colors/molokai.vim
+    owner:  root
+    group:  root
+    mode:   "u=rwx,g=r,o=r"
+
+- name: configure_vimrc
+  when: install_packages|success and create_vim_dirs|success
+  copy:
+    src:    vimrc
+    dest:   /root/.vimrc
+    owner:  root
+    group:  root
+    mode:   "u=rwx,g=r,o=r"
+  register: configure_vimrc
+
+- name: clone_vundle 
+  when: install_packages|success and create_vim_dirs|success
+  git:
+    repo: https://github.com/gmarik/Vundle.vim.git
+    dest: /root/.vim/bundle/Vundle.vim
+  register: clone_vundle
+
+- name: install_vundle
+  when: configure_vimrc|success and clone_vundle|success
+  command: "sudo vim +PluginInstall +qall"
