@@ -59,11 +59,38 @@
     - "ntp"
     - "htop"
     - "wget"
+    - "curl"
     - "git"
     - "fail2ban"
     - "iptables-persistent"
     - "sendmail"
+    - "lxc"
+    - "ufw"
   register: install_packages
+
+# Configure UFW
+
+- name: ufw_allow
+  when: install_packages|success
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+  with_items:
+    - "22"
+  register: ufw_allow
+
+- name: ufw_enable
+  when: install_packages|success and ufw_allow|success
+  ufw:
+    logging: "on"
+    state:   enabled
+    policy:  reject
+
+# Install Docker
+
+- name: install_docker
+  when: install_packages|success
+  shell: "curl -sSL https://get.docker.com/ | sh"
 
 # Configure NTP
 
