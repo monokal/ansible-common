@@ -62,7 +62,6 @@
     - "curl"
     - "git"
     - "fail2ban"
-    - "iptables-persistent"
     - "sendmail"
     - "lxc"
     - "ufw"
