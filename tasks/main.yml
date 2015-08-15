@@ -11,12 +11,12 @@
     mode:   "u=rw,g=r,o=r"
 
 - name: amend_hostname_file
-  template:
-    src:    hostname.j2
-    dest:   /etc/hostname
-    owner:  root
-    group:  root
-    mode:   "u=rw,g=r,o=r"
+  copy:
+    content: "{{ short_hostname }}"
+    dest:    /etc/hostname
+    owner:   root
+    group:   root
+    mode:    "u=rw,g=r,o=r"
 
 - name: amend_runtime_hostname
   hostname:
@@ -61,6 +61,22 @@
     - "wget"
     - "git"
   register: install_packages
+
+# Configure NTP
+
+- name: ntp_set_timezone
+  when: install_packages|success
+  copy:
+    content: "Europe/London"
+    dest:    /etc/timezone
+    owner:   root
+    group:   root
+    mode:    "u=rwx,g=r,o=r"
+  register: ntp_set_timezone
+
+- name: ntp_reconfigure_timezone
+  when: install_packages|success and ntp_set_timezone|success
+  command: "sudo dpkg-reconfigure --frontend noninteractive tzdata"
 
 # Configure Vim
 
