@@ -60,6 +60,9 @@
     - "htop"
     - "wget"
     - "git"
+    - "fail2ban"
+    - "iptables-persistent"
+    - "sendmail"
   register: install_packages
 
 # Configure NTP
