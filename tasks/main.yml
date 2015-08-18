@@ -41,9 +41,26 @@
     group:  root
     mode:   "u=rwx,g=rx,o=rx"
 
+# APT keys
+
+- name: add_docker_apt_key
+  apt_key: url=https://get.docker.com/gpg state=present
+  register: add_docker_apt_key
+
+# APT repos
+
+- name: add_docker_apt_repo
+  when: add_docker_apt_key|success
+  apt_repository: >
+                  repo="deb https://get.docker.com/ubuntu docker main"
+                  state=present
+                  update_cache=yes
+  register: add_docker_apt_repo
+
 # Upgrade
 
 - name: upgrade_system
+  when: add_docker_apt_repo|success
   apt:
     update_cache: yes
     upgrade: dist
@@ -65,6 +82,7 @@
     - "sendmail"
     - "lxc"
     - "ufw"
+    - "lxc-docker"
   register: install_packages
 
 # Configure UFW
@@ -85,12 +103,6 @@
     state:   enabled
     policy:  reject
 
-# Install Docker
-
-- name: install_docker
-  when: install_packages|success
-  shell: "curl -sSL https://get.docker.com/ | sh"
-
 # Configure NTP
 
 - name: ntp_set_timezone
@@ -100,12 +112,26 @@
     dest:    /etc/timezone
     owner:   root
     group:   root
-    mode:    "u=rwx,g=r,o=r"
+    force:   no
+    mode:    "u=rw,g=r,o=r"
   register: ntp_set_timezone
 
 - name: ntp_reconfigure_timezone
   when: install_packages|success and ntp_set_timezone|success
-  command: "sudo dpkg-reconfigure --frontend noninteractive tzdata"
+  command: sudo dpkg-reconfigure --frontend noninteractive tzdata
+  args:
+    creates: /root/.ansible_ntp_reconfigure_timezone_lock
+  register: ntp_reconfigure_timezone
+
+- name: ntp_reconfigure_timezone_lock
+  when: ntp_reconfigure_timezone|success
+  copy:
+    content: ""
+    dest:    /root/.ansible_ntp_reconfigure_timezone_lock
+    owner:   root
+    group:   root
+    force:   no
+    mode:    "u=rw,g=r,o=r"
 
 # Configure Vim
 
@@ -146,4 +172,17 @@
 
 - name: install_vundle
   when: configure_vimrc|success and clone_vundle|success
-  command: "sudo vim +PluginInstall +qall"
+  command: sudo vim +PluginInstall +qall
+  args:
+    creates: /root/.ansible_install_vundle_lock
+  register: install_vundle
+
+- name: install_vundle_lock
+  when: install_vundle|success
+  copy:
+    content: ""
+    dest:    /root/.ansible_install_vundle_lock
+    owner:   root
+    group:   root
+    force:   no
+    mode:    "u=rw,g=r,o=r"
