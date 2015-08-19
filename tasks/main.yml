@@ -104,13 +104,11 @@
     policy:  reject
 
 # Configure NTP
-# Note: The space at the end of content prevents duplicate runs of the task
-# due to dpkg-reconfigure automatically inserting one.
 
 - name: ntp_set_timezone
   when: install_packages|success
   copy:
-    content: 'Europe/London '
+    content: "Europe/London\n"
     dest:    /etc/timezone
     owner:   root
     group:   root
