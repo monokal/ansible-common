@@ -1,0 +1,4 @@
+---
+
+- name: ntp_reconfigure_timezone
+  command: sudo dpkg-reconfigure --frontend noninteractive tzdata

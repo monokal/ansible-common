@@ -104,34 +104,19 @@
     policy:  reject
 
 # Configure NTP
+# Note: The space at the end of content prevents duplicate runs of the task
+# due to dpkg-reconfigure automatically inserting one.
 
 - name: ntp_set_timezone
   when: install_packages|success
   copy:
-    content: "Europe/London"
+    content: 'Europe/London '
     dest:    /etc/timezone
     owner:   root
     group:   root
-    force:   no
     mode:    "u=rw,g=r,o=r"
-  register: ntp_set_timezone
-
-- name: ntp_reconfigure_timezone
-  when: install_packages|success and ntp_set_timezone|success
-  command: sudo dpkg-reconfigure --frontend noninteractive tzdata
-  args:
-    creates: /root/.ansible_ntp_reconfigure_timezone_lock
-  register: ntp_reconfigure_timezone
-
-- name: ntp_reconfigure_timezone_lock
-  when: ntp_reconfigure_timezone|success
-  copy:
-    content: ""
-    dest:    /root/.ansible_ntp_reconfigure_timezone_lock
-    owner:   root
-    group:   root
-    force:   no
-    mode:    "u=rw,g=r,o=r"
+  notify:
+    - ntp_reconfigure_timezone
 
 # Configure Vim
 
@@ -184,5 +169,4 @@
     dest:    /root/.ansible_install_vundle_lock
     owner:   root
     group:   root
-    force:   no
     mode:    "u=rw,g=r,o=r"
