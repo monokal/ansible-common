@@ -98,6 +98,7 @@
     - { port: '22', proto: 'tcp', direction: 'in'}
     - { port: '22', proto: 'tcp', direction: 'out'}
     - { port: '53', proto: 'any', direction: 'out' }
+    - { port: '80', proto: 'tcp', direction: 'in' }
     - { port: '80', proto: 'tcp', direction: 'out' }
     - { port: '443', proto: 'tcp', direction: 'in' }
     - { port: '443', proto: 'tcp', direction: 'out' }
