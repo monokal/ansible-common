@@ -79,6 +79,7 @@
     - "git"
     - "lxc"
     - "lxc-docker"
+    - "zsh"
   register: install_packages
 
 # Configure NTP
@@ -93,6 +94,26 @@
     mode:    "u=rw,g=r,o=r"
   notify:
     - ntp_reconfigure_timezone
+
+# Install Oh-My-Zsh
+
+- name: install_oh_my_zsh
+  when: install_packages|success
+  shell: "wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh"
+  args:
+    creates: /root/.ansible_install_oh_my_zsh_lock
+  register: install_oh_my_zsh
+  notify:
+    - chsh_oh_my_zsh
+
+- name: install_oh_my_zsh_lock
+  when: install_oh_my_zsh|success
+  copy:
+    content: ""
+    dest:    /root/.ansible_install_oh_my_zsh_lock
+    owner:   root
+    group:   root
+    mode:    "u=rw,g=r,o=r"
 
 # Configure Vim
 

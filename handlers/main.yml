@@ -1,4 +1,11 @@
 ---
 
+# NTP
+
 - name: ntp_reconfigure_timezone
   command: sudo dpkg-reconfigure --frontend noninteractive tzdata
+
+# Oh-My-Zsh
+
+- name: chsh_oh_my_zsh
+  shell: "chsh -s $(which zsh)"
