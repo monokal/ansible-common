@@ -8,4 +8,7 @@
 # Oh-My-Zsh
 
 - name: chsh_oh_my_zsh
-  shell: "chsh -s $(which zsh)"
+  user:
+  args:
+    name: root
+    shell: /usr/bin/zsh
