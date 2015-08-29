@@ -41,28 +41,28 @@
     group: root
     mode:  "u=rwx,g=rx,o=rx"
 
-# APT keys
-
-- name: add_docker_apt_key
-  apt_key:
-    url:   https://get.docker.com/gpg
-    state: present
-  register: add_docker_apt_key
-
-# APT repos
-
-- name: add_docker_apt_repo
-  when: add_docker_apt_key|success
-  apt_repository:
-    repo:         "deb https://get.docker.com/ubuntu docker main"
-    state:        present
-    update_cache: yes
-  register: add_docker_apt_repo
+## APT keys
+#
+#- name: add_docker_apt_key
+#  apt_key:
+#    url:   "https://get.docker.com/gpg"
+#    state: present
+#  register: add_docker_apt_key
+#
+## APT repos
+#
+#- name: add_docker_apt_repo
+#  when: add_docker_apt_key|success
+#  apt_repository:
+#    repo:         "deb https://get.docker.com/ubuntu docker main"
+#    state:        present
+#    update_cache: yes
+#  register: add_docker_apt_repo
 
 # Update
 
 - name: update_system
-  when: add_docker_apt_repo|success
+#  when: add_docker_apt_repo|success
   apt:
     update_cache: yes
   register: update_system
@@ -80,7 +80,7 @@
     - "curl"
     - "git"
     - "lxc"
-    - "lxc-docker"
+#    - "lxc-docker"
     - "zsh"
   register: install_packages
 
