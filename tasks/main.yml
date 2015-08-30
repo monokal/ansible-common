@@ -4,11 +4,11 @@
 
 - name: amend_hosts_file
   template:
-    src:    hosts.j2
-    dest:   /etc/hosts
-    owner:  root
-    group:  root
-    mode:   "u=rw,g=r,o=r"
+    src:   hosts.j2
+    dest:  /etc/hosts
+    owner: root
+    group: root
+    mode:  "u=rw,g=r,o=r"
 
 - name: amend_hostname_file
   copy:
@@ -41,38 +41,48 @@
     group: root
     mode:  "u=rwx,g=rx,o=rx"
 
-## APT keys
-#
+# APT keys
+
+## Until Ansible 2.0 the apt_key module is broken for the Docker repo. See:
+## https://github.com/ansible/ansible/issues/10091
 #- name: add_docker_apt_key
 #  apt_key:
 #    url:   "https://get.docker.com/gpg"
 #    state: present
 #  register: add_docker_apt_key
-#
-## APT repos
-#
-#- name: add_docker_apt_repo
-#  when: add_docker_apt_key|success
-#  apt_repository:
-#    repo:         "deb https://get.docker.com/ubuntu docker main"
-#    state:        present
-#    update_cache: yes
-#  register: add_docker_apt_repo
 
-# Update
+- name: add_docker_apt_key
+  shell: "/usr/bin/curl https://get.docker.com/gpg | /usr/bin/apt-key add -"
+  args:
+    creates: /root/.ansible_add_docker_apt_key_lock
+  register: add_docker_apt_key
 
-- name: update_system
-#  when: add_docker_apt_repo|success
-  apt:
+- name: add_docker_apt_key_lock
+  when: add_docker_apt_key|success
+  copy:
+    content: ""
+    dest:    /root/.ansible_add_docker_apt_key_lock
+    owner:   root
+    group:   root
+    mode:    "u=rw,g=r,o=r"
+
+# APT repos
+
+- name: add_docker_apt_repo
+  when: add_docker_apt_key|success
+  apt_repository:
+    repo:         "deb https://get.docker.com/ubuntu docker main"
+    state:        present
     update_cache: yes
-  register: update_system
+  register: add_docker_apt_repo
 
 # Packages
 
 - name: install_packages
-  when: update_system|success
+  when: add_docker_apt_key|success
   apt:
-    name: "{{ item }}"
+    name:         "{{ item }}"
+    update_cache: yes
   with_items:
     - "ntp"
     - "bridge-utils"
@@ -81,7 +91,7 @@
     - "curl"
     - "git"
     - "lxc"
-#    - "lxc-docker"
+    - "lxc-docker"
     - "zsh"
   register: install_packages
 
@@ -122,8 +132,8 @@
 
 - name: create_vim_dirs
   file:
-    path:   "{{ item }}"
-    state:  directory
+    path:  "{{ item }}"
+    state: directory
   with_items:
     - "/root/.vim"
     - "/root/.vim/colors"
@@ -132,20 +142,20 @@
 - name: configure_vim_theme
   when: install_packages|success and create_vim_dirs|success
   copy:
-    src:    molokai.vim
-    dest:   /root/.vim/colors/molokai.vim
-    owner:  root
-    group:  root
-    mode:   "u=rwx,g=r,o=r"
+    src:   molokai.vim
+    dest:  /root/.vim/colors/molokai.vim
+    owner: root
+    group: root
+    mode:  "u=rwx,g=r,o=r"
 
 - name: configure_vimrc
   when: install_packages|success and create_vim_dirs|success
   copy:
-    src:    vimrc
-    dest:   /root/.vimrc
-    owner:  root
-    group:  root
-    mode:   "u=rwx,g=r,o=r"
+    src:   vimrc
+    dest:  /root/.vimrc
+    owner: root
+    group: root
+    mode:  "u=rwx,g=r,o=r"
   register: configure_vimrc
 
 - name: clone_vundle 
