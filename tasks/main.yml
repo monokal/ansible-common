@@ -75,6 +75,7 @@
     name: "{{ item }}"
   with_items:
     - "ntp"
+    - "bridge-utils"
     - "htop"
     - "wget"
     - "curl"
