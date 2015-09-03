@@ -41,57 +41,18 @@
     group: root
     mode:  "u=rwx,g=rx,o=rx"
 
-# APT keys
-
-## Until Ansible 2.0 the apt_key module is broken for the Docker repo. See:
-## https://github.com/ansible/ansible/issues/10091
-#- name: add_docker_apt_key
-#  apt_key:
-#    url:   "https://get.docker.com/gpg"
-#    state: present
-#  register: add_docker_apt_key
-
-- name: add_docker_apt_key
-  shell: "/usr/bin/curl https://get.docker.com/gpg | /usr/bin/apt-key add -"
-  args:
-    creates: /root/.ansible_add_docker_apt_key_lock
-  register: add_docker_apt_key
-
-- name: add_docker_apt_key_lock
-  when: add_docker_apt_key|success
-  copy:
-    content: ""
-    dest:    /root/.ansible_add_docker_apt_key_lock
-    owner:   root
-    group:   root
-    mode:    "u=rw,g=r,o=r"
-
-# APT repos
-
-- name: add_docker_apt_repo
-  when: add_docker_apt_key|success
-  apt_repository:
-    repo:         "deb https://get.docker.com/ubuntu docker main"
-    state:        present
-    update_cache: yes
-  register: add_docker_apt_repo
-
 # Packages
 
 - name: install_packages
-  when: add_docker_apt_key|success
   apt:
     name:         "{{ item }}"
     update_cache: yes
   with_items:
     - "ntp"
-    - "bridge-utils"
     - "htop"
     - "wget"
     - "curl"
     - "git"
-    - "lxc"
-    - "lxc-docker"
     - "zsh"
   register: install_packages
 
