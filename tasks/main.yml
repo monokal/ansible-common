@@ -2,7 +2,8 @@
 
 # Hostname
 
-- name: amend_hosts_file
+- name:   amend_hosts_file
+  become: true
   template:
     src:   hosts.j2
     dest:  /etc/hosts
@@ -35,8 +36,8 @@
 
 - name: amend_motd
   template:
-    src:   00-monokal-header.j2
-    dest:  /etc/update-motd.d/00-monokal-header
+    src:   "00-monokal-header.j2"
+    dest:  "/etc/update-motd.d/00-monokal-header"
     owner: root
     group: root
     mode:  "u=rwx,g=rx,o=rx"
@@ -62,7 +63,7 @@
   when: install_packages|success
   copy:
     content: "Europe/London\n"
-    dest:    /etc/timezone
+    dest:    "/etc/timezone"
     owner:   root
     group:   root
     mode:    "u=rw,g=r,o=r"
@@ -75,7 +76,7 @@
   when: install_packages|success
   shell: "wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh"
   args:
-    creates: /root/.ansible_install_oh_my_zsh_lock
+    creates: "~/.ansible_install_oh_my_zsh_lock"
   register: install_oh_my_zsh
   notify:
     - chsh_oh_my_zsh
@@ -84,10 +85,7 @@
   when: install_oh_my_zsh|success
   copy:
     content: ""
-    dest:    /root/.ansible_install_oh_my_zsh_lock
-    owner:   root
-    group:   root
-    mode:    "u=rw,g=r,o=r"
+    dest:    "~/.ansible_install_oh_my_zsh_lock"
 
 # Configure Vim
 
@@ -96,48 +94,40 @@
     path:  "{{ item }}"
     state: directory
   with_items:
-    - "/root/.vim"
-    - "/root/.vim/colors"
+    - "~/.vim"
+    - "~/.vim/colors"
+    - "~/.vim/bundle"
   register: create_vim_dirs
 
 - name: configure_vim_theme
   when: install_packages|success and create_vim_dirs|success
   copy:
     src:   molokai.vim
-    dest:  /root/.vim/colors/molokai.vim
-    owner: root
-    group: root
-    mode:  "u=rwx,g=r,o=r"
+    dest:  "~/.vim/colors/molokai.vim"
 
 - name: configure_vimrc
   when: install_packages|success and create_vim_dirs|success
   copy:
     src:   vimrc
-    dest:  /root/.vimrc
-    owner: root
-    group: root
-    mode:  "u=rwx,g=r,o=r"
+    dest:  "~/.vimrc"
   register: configure_vimrc
 
 - name: clone_vundle 
   when: install_packages|success and create_vim_dirs|success
   git:
-    repo: https://github.com/gmarik/Vundle.vim.git
-    dest: /root/.vim/bundle/Vundle.vim
+    repo: "https://github.com/gmarik/Vundle.vim.git"
+    dest: "~/.vim/bundle/Vundle.vim"
   register: clone_vundle
 
 - name: install_vundle
   when: configure_vimrc|success and clone_vundle|success
-  command: sudo vim +PluginInstall +qall
+  command: "vim +PluginInstall +qall"
   args:
-    creates: /root/.ansible_install_vundle_lock
+    creates: "~/.ansible_install_vundle_lock"
   register: install_vundle
 
 - name: install_vundle_lock
   when: install_vundle|success
   copy:
     content: ""
-    dest:    /root/.ansible_install_vundle_lock
-    owner:   root
-    group:   root
-    mode:    "u=rw,g=r,o=r"
+    dest:    "~/.ansible_install_vundle_lock"
