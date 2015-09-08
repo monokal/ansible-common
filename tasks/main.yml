@@ -36,7 +36,7 @@
 
 - name: amend_motd
   template:
-    src:   "00-monokal-header.j2"
+    src:   "../../../templates/00-monokal-header.j2"
     dest:  "/etc/update-motd.d/00-monokal-header"
     owner: root
     group: root
