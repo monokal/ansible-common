@@ -36,8 +36,8 @@
 
 - name: amend_motd
   template:
-    src:   "../../../templates/00-monokal-header.j2"
-    dest:  "/etc/update-motd.d/00-monokal-header"
+    src:   "../../../templates/00-custom-header.j2"
+    dest:  "/etc/update-motd.d/00-custom-header"
     owner: root
     group: root
     mode:  "u=rwx,g=rx,o=rx"
@@ -76,16 +76,10 @@
   when: install_packages|success
   shell: "wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh"
   args:
-    creates: "~/.ansible_install_oh_my_zsh_lock"
+    creates: "/usr/bin/zsh"
   register: install_oh_my_zsh
   notify:
     - chsh_oh_my_zsh
-
-- name: install_oh_my_zsh_lock
-  when: install_oh_my_zsh|success
-  copy:
-    content: ""
-    dest:    "~/.ansible_install_oh_my_zsh_lock"
 
 # Configure Vim
 
